@@ -5,7 +5,7 @@
 #include "../include/ssd1306.h"
 
 #include <util/delay.h>
-#include "../include/i2c.h"
+#include "../libs/libi2c-atmega328p/include/i2c.h"
 
 static inline void ssd1306_begin_tx(uint8_t control) {
     i2c_start_write(SSD1306_I2C_ADDR);

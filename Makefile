@@ -9,11 +9,13 @@ CFLAGS = -Wall -Os -mmcu=$(MCU) -DF_CPU=$(F_CPU)
 SRC_DIR = src
 INC_DIR = include
 LIB_DIR = ssd1306-libs
-I2C_SRC = libs/i2c/src
-I2C_INC = libs/i2c/include
+
+# I2C
+I2C_LIB_DIR = libs/libi2c-atmega328p
+I2C_INC_DIR = $(I2C_LIB_DIR)/include
 
 # Fichiers sources
-SOURCES = $(SRC_DIR)/ssd1306.c $(SRC_DIR)/ssd1306_text.c $(SRC_DIR)/font5x7.c $(I2C_SRC)/i2c.c
+SOURCES = $(SRC_DIR)/ssd1306.c $(SRC_DIR)/ssd1306_text.c $(SRC_DIR)/font5x7.c
 OBJECTS = $(SOURCES:.c=.o)
 
 # Cible de la bibliothèque
@@ -30,7 +32,7 @@ $(TARGET): $(OBJECTS)
 	@echo "Bibliothèque créée: $@"
 
 %.o: %.c
-	$(CC) $(CFLAGS) -I$(INC_DIR) -I$(I2C_INC) -c $< -o $@
+	$(CC) $(CFLAGS) -I$(INC_DIR) -I$(I2C_INC_DIR) -c $< -o $@
 
 clean:
 	rm -f $(OBJECTS) $(TARGET)

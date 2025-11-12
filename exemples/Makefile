@@ -10,15 +10,17 @@ export MCU   = atmega32u4
 export FCPU  = 16000000
 export FLAGS = -mmcu=$(MCU)
 
-# Paths (adjust if needed)
-# i2c expected at ../libs/i2c with subdirs: include/, src/
-I2C_DIR        := ../libs/i2c
+# I2C
+I2C_LIB_DIR = ../libs/libi2c-atmega328p
+I2C_INC_DIR = $(I2C_LIB_DIR)/include
+LIB_I2C     = $(I2C_LIB_DIR)/libi2c.a
+
 
 # Includes
 export INCLUDES      = -I../include
 export I2C_INCLUDES  = -I$(I2C_DIR)/include
-export CFLAGS        = -Wall $(FLAGS) -DF_CPU=$(FCPU) -Os $(INCLUDES) $(I2C_INCLUDES)
-export LDFLAGS       = $(FLAGS)
+export CFLAGS        = -Wall $(FLAGS) -DF_CPU=$(FCPU) -Os $(INCLUDES) -I$(I2C_INC_DIR)
+export LDFLAGS       = $(FLAGS) -L$(I2C_LIB_DIR) -li2c
 
 # Programmer
 export PROGRAMMER = dfu-programmer
@@ -26,26 +28,18 @@ export PROGRAMMER = dfu-programmer
 # Targets
 TARGET  = main
 
-# Your PN532/app sources (do NOT put i2c sources here)
 SOURCES  = $(wildcard *.c ../src/*.c)
 OBJECTS  = $(SOURCES:.c=.o)
 
-# i2c static library (compiled once)
-I2C_SRCS := $(wildcard $(I2C_DIR)/src/*.c)
-I2C_OBJS := $(I2C_SRCS:.c=.o)
-LIB_I2C  := libi2c.a
 
 .PHONY: all clean upload size
 
 all: $(TARGET).hex
 
-# Link final ELF with the single i2c static lib
-$(TARGET): $(OBJECTS) $(LIB_I2C)
+
+$(TARGET): $(OBJECTS)
 	$(LD) $(LDFLAGS) -o $@ $(OBJECTS) $(LIB_I2C)
 
-# Build static lib from i2c objects
-$(LIB_I2C): $(I2C_OBJS)
-	$(AR) rcs $@ $^
 
 # Hex and utility targets
 $(TARGET).hex: $(TARGET)
@@ -60,5 +54,5 @@ size: $(TARGET)
 	$(SIZE) --format=avr --mcu=$(MCU) $(TARGET)
 
 clean:
-	rm -f *.o $(TARGET).hex $(TARGET) ../src/*.o $(I2C_OBJS) $(LIB_I2C)
+	rm -f *.o $(TARGET).hex $(TARGET) ../src/*.o $(I2C_OBJS)
 
