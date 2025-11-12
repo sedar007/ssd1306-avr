@@ -48,6 +48,16 @@ void ssd1306_clear(void) {
     }
 }
 
+void ssd1306_clear_page(uint8_t page) {
+    if (page >= SSD1306_PAGES) return;
+
+    ssd1306_set_cursor(page, 0);
+    for (uint8_t col = 0; col < SSD1306_WIDTH; ++col) {
+        ssd1306_send_data_byte(0x00);
+    }
+}
+
+
 void ssd1306_init(void) {
     i2c_init();
     _delay_ms(100);
