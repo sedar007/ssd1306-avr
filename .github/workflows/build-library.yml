@@ -1,0 +1,56 @@
+name: Build SSD1306 Library
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  release:
+    types: [ created ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Install AVR toolchain
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gcc-avr avr-libc binutils-avr
+
+    - name: Build library
+      run: make
+
+    - name: Verify library creation
+      run: |
+        ls -lh ssd1306-libs/
+        file ssd1306-libs/libssd1306.a
+
+    - name: Upload library artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: libssd1306-atmega328p
+        path: |
+          ssd1306-libs/libssd1306.a
+          ssd1306-libs/include/*.h
+        retention-days: 90
+
+    - name: Create release archive
+      if: github.event_name == 'release'
+      run: |
+        cd ssd1306-libs
+        tar -czf libssd1306-${{ github.ref_name }}.tar.gz libssd1306.a include/
+        cd ..
+
+    - name: Upload to Release
+      if: github.event_name == 'release'
+      uses: softprops/action-gh-release@v1
+      with:
+        files: ssd1306-libs/libssd1306-${{ github.ref_name }}.tar.gz
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
