@@ -10,9 +10,10 @@ SRC_DIR = src
 INC_DIR = include
 LIB_DIR = ssd1306-libs
 
-# I2C
+# I2C (pre-built library)
 I2C_LIB_DIR = libs/libi2c-atmega328p
 I2C_INC_DIR = $(I2C_LIB_DIR)/include
+I2C_LIB = $(I2C_LIB_DIR)/libi2c.a
 
 # Fichiers sources
 SOURCES = $(SRC_DIR)/ssd1306.c $(SRC_DIR)/ssd1306_text.c $(SRC_DIR)/font5x7.c
@@ -26,9 +27,12 @@ TARGET = $(LIB_DIR)/libssd1306.a
 all: $(TARGET)
 
 $(TARGET): $(OBJECTS)
-	@mkdir -p $(LIB_DIR)/include
-	$(AR) rcs $@ $^
+	@mkdir -p $(LIB_DIR)/include $(LIB_DIR)/tmp
+	cd $(LIB_DIR)/tmp && $(AR) x ../../$(I2C_LIB)
+	$(AR) rcs $@ $^ $(LIB_DIR)/tmp/*.o
+	rm -rf $(LIB_DIR)/tmp
 	cp $(INC_DIR)/*.h $(LIB_DIR)/include/
+	cp $(I2C_INC_DIR)/*.h $(LIB_DIR)/include/
 	@echo "Bibliothèque créée: $@"
 
 %.o: %.c
